@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gold Signal — XAU/USD Trading Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --bg2: #141416;
+    --bg3: #1a1a1d;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f0ede8;
+    --muted: #888580;
+    --subtle: #555;
+    --gold: #C9922A;
+    --gold-light: #e8b850;
+    --up: #3db87a;
+    --dn: #e05b3a;
+    --wait: #d4923a;
+    --buy-bg: rgba(61,184,122,0.12);
+    --sell-bg: rgba(224,91,58,0.12);
+    --wait-bg: rgba(212,146,58,0.12);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  html { font-size: 15px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'SF Pro Display', -apple-system, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  .page { max-width: 980px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+  /* ── Header ── */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    background: linear-gradient(135deg, #b8771e, #e8b850);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: #fff; font-weight: 700;
+  }
+  .brand-name { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+  .brand-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 20px; padding: 5px 12px;
+    font-size: 12px; color: var(--muted);
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--up); animation: pulse 1.8s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+  .refresh-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--bg3); border: 1px solid var(--border2);
+    color: var(--text); border-radius: var(--radius-sm);
+    padding: 7px 14px; font-size: 13px; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .refresh-btn:hover { background: var(--bg2); border-color: var(--gold); color: var(--gold-light); }
+  .refresh-btn.spinning i { animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Price Strip ── */
+  .price-strip {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px; margin-bottom: 1.25rem;
+  }
+  .price-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1rem 1.1rem;
+    transition: border-color 0.2s;
+  }
+  .price-card:hover { border-color: var(--border2); }
+  .pc-label { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .pc-val { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -0.5px; }
+  .pc-sub { font-size: 12px; margin-top: 4px; }
+  .up { color: var(--up); } .dn { color: var(--dn); } .neu { color: var(--muted); }
+
+  /* ── Main Signal ── */
+  .signal-main {
+    display: flex; align-items: center; gap: 1.5rem;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem; flex-wrap: wrap;
+    transition: border-color 0.3s;
+  }
+  .signal-main.state-buy  { border-color: rgba(61,184,122,0.35); }
+  .signal-main.state-sell { border-color: rgba(224,91,58,0.35); }
+  .signal-main.state-wait { border-color: rgba(212,146,58,0.35); }
+
+  .sig-badge {
+    font-size: 22px; font-weight: 700; padding: 0.6rem 1.75rem;
+    border-radius: var(--radius-sm); letter-spacing: 2px; white-space: nowrap;
+  }
+  .sig-badge.buy  { background: var(--buy-bg);  color: var(--up);   border: 1px solid rgba(61,184,122,0.3); }
+  .sig-badge.sell { background: var(--sell-bg); color: var(--dn);   border: 1px solid rgba(224,91,58,0.3); }
+  .sig-badge.wait { background: var(--wait-bg); color: var(--wait); border: 1px solid rgba(212,146,58,0.3); }
+
+  .sig-info { flex: 1; min-width: 180px; }
+  .sig-desc { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  .sig-score { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .strength-bar { height: 5px; border-radius: 3px; background: var(--border); overflow: hidden; }
+  .strength-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
+  .sig-counts { display: flex; gap: 12px; margin-left: auto; }
+  .count-chip {
+    text-align: center; padding: 0.5rem 1rem;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); min-width: 64px;
+  }
+  .count-num { font-size: 24px; font-weight: 600; }
+  .count-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* ── Indicator Grid ── */
+  .section-title {
+    font-size: 11px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 10px; margin-top: 1.5rem;
+  }
+  .ind-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 10px; margin-bottom: 1.5rem;
+  }
+  .ind-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 0.9rem 1rem;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .ind-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .ind-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+  .ind-name { font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: 0.4px; text-transform: uppercase; }
+  .ind-pill {
+    font-size: 10px; font-weight: 600; padding: 2px 9px;
+    border-radius: 20px; letter-spacing: 0.5px;
+  }
+  .pill-buy  { background: var(--buy-bg);  color: var(--up);   border: 1px solid rgba(61,184,122,0.25); }
+  .pill-sell { background: var(--sell-bg); color: var(--dn);   border: 1px solid rgba(224,91,58,0.25); }
+  .pill-neu  { background: rgba(136,133,128,0.15); color: var(--muted); border: 1px solid var(--border); }
+  .ind-val { font-size: 18px; font-weight: 600; color: var(--text); }
+  .ind-desc { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+
+  /* ── Chart ── */
+  .chart-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.1rem 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+  .chart-ttl { font-size: 13px; font-weight: 500; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; }
+  .leg-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+  .leg-dot { width: 20px; height: 3px; border-radius: 2px; }
+  .leg-pt  { width: 8px; height: 8px; border-radius: 2px; transform: rotate(45deg); }
+
+  /* ── Levels ── */
+  .levels-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+  .level-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1rem 1.1rem;
+  }
+  .level-hdr { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .level-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .level-row:last-child { border-bottom: none; }
+  .level-lbl { color: var(--muted); }
+  .level-pct { font-size: 10px; color: var(--muted); }
+
+  /* ── Footer ── */
+  .footer { text-align: center; font-size: 11px; color: var(--subtle); margin-top: 2rem; line-height: 1.7; }
+  .footer a { color: var(--muted); text-decoration: none; }
+  .footer a:hover { color: var(--gold-light); }
+
+  /* ── Loading skeleton ── */
+  .skeleton { background: linear-gradient(90deg, var(--bg3) 25%, var(--bg2) 50%, var(--bg3) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; height: 22px; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  /* ── Timestamp ── */
+  #ts { font-size: 11px; color: var(--muted); }
+
+  @media (max-width: 600px) {
+    .levels-grid { grid-template-columns: 1fr; }
+    .sig-counts { display: none; }
+    .header { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="brand">
+      <div class="brand-icon">Au</div>
+      <div>
+        <div class="brand-name">Gold Signal Dashboard</div>
+        <div class="brand-sub">XAU/USD · Indikator Teknikal Real-Time</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        <span id="ts">Memuat...</span>
+      </div>
+      <button class="refresh-btn" id="refBtn" onclick="loadData()">
+        <i class="ti ti-refresh"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Price Strip -->
+  <div class="price-strip">
+    <div class="price-card">
+      <div class="pc-label">Harga XAU/USD</div>
+      <div class="pc-val" id="price">—</div>
+      <div class="pc-sub" id="price-chg">—</div>
+    </div>
+    <div class="price-card">
+      <div class="pc-label">Perubahan 24H</div>
+      <div class="pc-val" id="chg24">—</div>
+      <div class="pc-sub" id="chg24p">—</div>
+    </div>
+    <div class="price-card">
+      <div class="pc-label">High 24H</div>
+      <div class="pc-val" id="high">—</div>
+      <div class="pc-sub neu">Tertinggi hari ini</div>
+    </div>
+    <div class="price-card">
+      <div class="pc-label">Low 24H</div>
+      <div class="pc-val" id="low">—</div>
+      <div class="pc-sub neu">Terendah hari ini</div>
+    </div>
+  </div>
+
+  <!-- Main Signal -->
+  <div class="signal-main" id="sig-main">
+    <div class="sig-badge wait" id="sig-badge">MEMUAT</div>
+    <div class="sig-info">
+      <div class="sig-desc" id="sig-desc">Mengambil data pasar terkini...</div>
+      <div class="sig-score">Kekuatan sinyal: <span id="sig-pct">—</span></div>
+      <div class="strength-bar">
+        <div class="strength-fill" id="sig-fill" style="width:0%;background:var(--wait)"></div>
+      </div>
+    </div>
+    <div class="sig-counts">
+      <div class="count-chip">
+        <div class="count-num up" id="cnt-buy">—</div>
+        <div class="count-lbl">Beli</div>
+      </div>
+      <div class="count-chip">
+        <div class="count-num dn" id="cnt-sell">—</div>
+        <div class="count-lbl">Jual</div>
+      </div>
+      <div class="count-chip">
+        <div class="count-num neu" id="cnt-neu">—</div>
+        <div class="count-lbl">Netral</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Indicators -->
+  <div class="section-title">Indikator Teknikal (8 Indikator)</div>
+  <div class="ind-grid" id="ind-grid"></div>
+
+  <!-- Chart -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <span class="chart-ttl">Harga 60 Hari + MA20 · MA50</span>
+      <div class="legend">
+        <span class="leg-item"><span class="leg-dot" style="background:#C9922A"></span>XAU/USD</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#3db87a"></span>MA20</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#5b9ef5"></span>MA50</span>
+        <span class="leg-item"><span class="leg-pt" style="background:#3db87a"></span>Sinyal Beli</span>
+        <span class="leg-item"><span class="leg-pt" style="background:#e05b3a"></span>Sinyal Jual</span>
+      </div>
+    </div>
+    <div style="position:relative;height:260px;">
+      <canvas id="priceChart" role="img" aria-label="Grafik harga XAU/USD 60 hari dengan MA20, MA50, dan sinyal beli/jual"></canvas>
+    </div>
+  </div>
+
+  <!-- Levels -->
+  <div class="levels-grid">
+    <div class="level-card">
+      <div class="level-hdr"><i class="ti ti-arrow-bar-up"></i> Resistansi</div>
+      <div id="res-lv"></div>
+    </div>
+    <div class="level-card">
+      <div class="level-hdr"><i class="ti ti-arrow-bar-down"></i> Dukungan</div>
+      <div id="sup-lv"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Data pasar dari Yahoo Finance · Harga XAU/USD · Bukan saran investasi finansial<br>
+    Selalu lakukan riset mandiri sebelum bertransaksi ·
+    <a href="https://github.com" target="_blank">Deploy via GitHub Pages</a>
+  </div>
+
+</div>
+
+<script>
+let chart = null;
+
+const fmt = (n, d=2) => Number(n).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d});
+const usd = n => '$' + fmt(n, 2);
+
+function ema(data, p) {
+  const k=2/(p+1); let e=data[0]; const out=[e];
+  for(let i=1;i<data.length;i++){e=data[i]*k+e*(1-k);out.push(e);}
+  return out;
+}
+function sma(data, p) {
+  return data.map((_,i)=>i<p-1?null:data.slice(i-p+1,i+1).reduce((a,b)=>a+b,0)/p);
+}
+function rsi(c, p=14) {
+  let g=0,l=0;
+  for(let i=1;i<=p;i++){const d=c[i]-c[i-1];d>0?g+=d:l-=d;}
+  let ag=g/p,al=l/p;
+  for(let i=p+1;i<c.length;i++){const d=c[i]-c[i-1];ag=(ag*(p-1)+(d>0?d:0))/p;al=(al*(p-1)+(d<0?-d:0))/p;}
+  return al===0?100:100-100/(1+ag/al);
+}
+function macd(c) {
+  const e12=ema(c,12),e26=ema(c,26);
+  const line=e12.map((v,i)=>v-e26[i]);
+  const sig=ema(line,9); const n=line.length-1;
+  return {macd:line[n],signal:sig[n],hist:line[n]-sig[n]};
+}
+function bb(c,p=20) {
+  const s=sma(c,p); const n=c.length-1; if(!s[n]) return null;
+  const sl=c.slice(n-p+1,n+1), m=s[n];
+  const sd=Math.sqrt(sl.reduce((a,v)=>a+(v-m)**2,0)/p);
+  return {upper:m+2*sd,middle:m,lower:m-2*sd,price:c[n]};
+}
+function stoch(c,p=14) {
+  const n=c.length-1, sl=c.slice(n-p+1,n+1);
+  const lo=Math.min(...sl),hi=Math.max(...sl);
+  return hi===lo?50:(c[n]-lo)/(hi-lo)*100;
+}
+function roc(c,p=10) {
+  const n=c.length-1; return (c[n]-c[n-p])/c[n-p]*100;
+}
+function atr(c,p=14) {
+  const trs=[];
+  for(let i=1;i<c.length;i++) trs.push(Math.abs(c[i]-c[i-1]));
+  return trs.slice(-p).reduce((a,b)=>a+b,0)/p;
+}
+
+function genFallback(base,n=60) {
+  const p=[base];
+  for(let i=1;i<n;i++){const ch=(Math.random()-0.495)*18;p.push(Math.max(p[i-1]+ch,base*0.88));}
+  return p;
+}
+
+function getOverall(inds) {
+  const buy=inds.filter(i=>i.sig==='BUY').length;
+  const sell=inds.filter(i=>i.sig==='SELL').length;
+  const neu=inds.length-buy-sell;
+  const total=inds.length;
+  if(buy/total>=0.6)  return {action:'BELI',cls:'buy',pct:Math.round(buy/total*100),color:'var(--up)',buy,sell,neu};
+  if(sell/total>=0.6) return {action:'JUAL',cls:'sell',pct:Math.round(sell/total*100),color:'var(--dn)',buy,sell,neu};
+  return {action:'TUNGGU',cls:'wait',pct:50,color:'var(--wait)',buy,sell,neu};
+}
+
+function renderInds(inds) {
+  document.getElementById('ind-grid').innerHTML = inds.map(i=>`
+    <div class="ind-card">
+      <div class="ind-top">
+        <span class="ind-name">${i.name}</span>
+        <span class="ind-pill ${i.sig==='BUY'?'pill-buy':i.sig==='SELL'?'pill-sell':'pill-neu'}">
+          ${i.sig==='BUY'?'BELI':i.sig==='SELL'?'JUAL':'NETRAL'}
+        </span>
+      </div>
+      <div class="ind-val">${i.val}</div>
+      <div class="ind-desc">${i.desc}</div>
+    </div>
+  `).join('');
+}
+
+function renderLevels(price) {
+  const rr=[[1.008,'R3'],[1.015,'R2'],[1.025,'R1']].reverse();
+  const ss=[[0.992,'S1'],[0.985,'S2'],[0.975,'S3']];
+  document.getElementById('res-lv').innerHTML = rr.map(([f,l])=>`
+    <div class="level-row">
+      <span class="level-lbl">${l}</span>
+      <span class="dn">${usd(price*f)}</span>
+      <span class="level-pct">+${fmt((f-1)*100,2)}%</span>
+    </div>`).join('');
+  document.getElementById('sup-lv').innerHTML = ss.map(([f,l])=>`
+    <div class="level-row">
+      <span class="level-lbl">${l}</span>
+      <span class="up">${usd(price*f)}</span>
+      <span class="level-pct">${fmt((f-1)*100,2)}%</span>
+    </div>`).join('');
+}
+
+function drawChart(prices, ma20a, ma50a, buyPts, sellPts) {
+  const labels = prices.map((_,i)=>{
+    const d=new Date(); d.setDate(d.getDate()-prices.length+1+i);
+    return d.toLocaleDateString('id-ID',{month:'short',day:'numeric'});
+  });
+  if(chart){ chart.destroy(); chart=null; }
+  chart = new Chart(document.getElementById('priceChart'),{
+    type:'line',
+    data:{labels, datasets:[
+      {label:'XAU/USD',data:prices,borderColor:'#C9922A',borderWidth:2,pointRadius:0,tension:0.35,fill:false,order:1},
+      {label:'MA20',data:ma20a,borderColor:'#3db87a',borderWidth:1.5,borderDash:[5,3],pointRadius:0,tension:0.3,fill:false,order:2},
+      {label:'MA50',data:ma50a,borderColor:'#5b9ef5',borderWidth:1.5,borderDash:[5,3],pointRadius:0,tension:0.3,fill:false,order:3},
+      {label:'Sinyal Beli',data:buyPts,borderColor:'transparent',backgroundColor:'#3db87a',pointRadius:7,pointStyle:'triangle',showLine:false,fill:false,order:0},
+      {label:'Sinyal Jual',data:sellPts,borderColor:'transparent',backgroundColor:'#e05b3a',pointRadius:7,pointStyle:'rectRot',showLine:false,fill:false,order:0}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      animation:{duration:600},
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,backgroundColor:'#1a1a1d',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#f0ede8',bodyColor:'#888580',padding:10}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#666',font:{size:10},maxTicksLimit:10}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#666',font:{size:10},callback:v=>'$'+Math.round(v).toLocaleString()}}
+      }
+    }
+  });
+}
+
+async function loadData() {
+  const btn = document.getElementById('refBtn');
+  btn.classList.add('spinning');
+  document.getElementById('ts').textContent = 'Memuat...';
+
+  let closes, latestPrice, high24, low24, prevClose;
+  let dataSource = 'live';
+
+  try {
+    const res = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1d&range=60d');
+    if(res.ok) {
+      const json = await res.json();
+      const q = json.chart?.result?.[0];
+      if(q && q.indicators?.quote?.[0]?.close) {
+        closes = q.indicators.quote[0].close.filter(Boolean);
+        const m = q.meta;
+        latestPrice = m.regularMarketPrice || closes.at(-1);
+        high24 = m.regularMarketDayHigh || latestPrice*1.005;
+        low24  = m.regularMarketDayLow  || latestPrice*0.995;
+        prevClose = m.chartPreviousClose || closes.at(-2);
+      }
+    }
+  } catch(e) { dataSource='sim'; }
+
+  if(!closes || closes.length < 30) {
+    dataSource = 'sim';
+    const base = 2320 + Math.random()*120;
+    closes = genFallback(base, 60);
+    latestPrice = closes.at(-1);
+    high24 = latestPrice*(1+Math.random()*0.007);
+    low24  = latestPrice*(1-Math.random()*0.007);
+    prevClose = closes.at(-2);
+  }
+
+  const chg = latestPrice - prevClose;
+  const chgPct = chg/prevClose*100;
+  const isUp = chg >= 0;
+
+  document.getElementById('price').textContent = usd(latestPrice);
+  document.getElementById('price-chg').innerHTML = `<span class="${isUp?'up':'dn'}">${isUp?'▲':'▼'} ${usd(Math.abs(chg))}</span>`;
+  document.getElementById('chg24').innerHTML = `<span class="${isUp?'up':'dn'}">${isUp?'+':''}${fmt(chg,2)}</span>`;
+  document.getElementById('chg24p').innerHTML = `<span class="${isUp?'up':'dn'}">${isUp?'+':''}${fmt(chgPct,2)}%</span>`;
+  document.getElementById('high').textContent = usd(high24);
+  document.getElementById('low').textContent  = usd(low24);
+
+  // ─── Compute all indicators ───
+  const rsiVal   = rsi(closes);
+  const macdData = macd(closes);
+  const bbData   = bb(closes);
+  const stochVal = stoch(closes);
+  const rocVal   = roc(closes);
+  const atrVal   = atr(closes);
+  const ma20a    = sma(closes,20);
+  const ma50a    = sma(closes,50);
+  const ema9a    = ema(closes,9);
+  const ema21a   = ema(closes,21);
+  const ma20v    = ma20a.at(-1);
+  const ma50v    = ma50a.at(-1);
+  const ema9v    = ema9a.at(-1);
+  const ema21v   = ema21a.at(-1);
+
+  const indicators = [
+    {
+      name:'RSI (14)',
+      val: fmt(rsiVal,1),
+      sig: rsiVal<30?'BUY':rsiVal>70?'SELL':'NEUTRAL',
+      desc: rsiVal<30?`Oversold (${fmt(rsiVal,1)}) – potensi rebound`:rsiVal>70?`Overbought (${fmt(rsiVal,1)}) – potensi koreksi`:`Netral zona (30–70)`
+    },
+    {
+      name:'MACD (12,26,9)',
+      val: (macdData.hist>=0?'+':'')+fmt(macdData.hist,2),
+      sig: macdData.macd>macdData.signal?'BUY':'SELL',
+      desc: macdData.macd>macdData.signal?'Momentum bullish – MACD di atas sinyal':'Momentum bearish – MACD di bawah sinyal'
+    },
+    {
+      name:'Bollinger Bands',
+      val: bbData?`${fmt((bbData.price-bbData.lower)/(bbData.upper-bbData.lower)*100,0)}% BB`:'—',
+      sig: bbData?(bbData.price<bbData.lower?'BUY':bbData.price>bbData.upper?'SELL':'NEUTRAL'):'NEUTRAL',
+      desc: bbData?(bbData.price<bbData.lower?'Harga menyentuh band bawah – oversold':bbData.price>bbData.upper?'Harga menyentuh band atas – overbought':'Harga di dalam band normal'):'—'
+    },
+    {
+      name:'Stochastic (14)',
+      val: fmt(stochVal,1),
+      sig: stochVal<20?'BUY':stochVal>80?'SELL':'NEUTRAL',
+      desc: stochVal<20?'Zona oversold – sinyal reversal naik':stochVal>80?'Zona overbought – sinyal reversal turun':`Netral (${fmt(stochVal,1)})`
+    },
+    {
+      name:'MA20 vs MA50',
+      val: `${fmt(ma20v,0)} / ${fmt(ma50v,0)}`,
+      sig: ma20v>ma50v?'BUY':'SELL',
+      desc: ma20v>ma50v?'Golden cross – tren jangka menengah naik':'Death cross – tren jangka menengah turun'
+    },
+    {
+      name:'EMA9 vs EMA21',
+      val: `${fmt(ema9v,0)} / ${fmt(ema21v,0)}`,
+      sig: ema9v>ema21v?'BUY':'SELL',
+      desc: ema9v>ema21v?'EMA cepat di atas – momentum naik':'EMA cepat di bawah – momentum turun'
+    },
+    {
+      name:'Rate of Change (10)',
+      val: (rocVal>=0?'+':'')+fmt(rocVal,2)+'%',
+      sig: rocVal>0?'BUY':'SELL',
+      desc: rocVal>0?`Harga naik ${fmt(rocVal,2)}% dalam 10 hari`:`Harga turun ${fmt(Math.abs(rocVal),2)}% dalam 10 hari`
+    },
+    {
+      name:'ATR Volatilitas (14)',
+      val: usd(atrVal),
+      sig: 'NEUTRAL',
+      desc: `Kisaran rata-rata harian ${usd(atrVal)} · ${atrVal/latestPrice*100>0.8?'Volatilitas tinggi':'Volatilitas normal'}`
+    }
+  ];
+
+  renderInds(indicators);
+  const overall = getOverall(indicators);
+
+  const box = document.getElementById('sig-main');
+  const badge = document.getElementById('sig-badge');
+  box.className = `signal-main state-${overall.cls}`;
+  badge.className = `sig-badge ${overall.cls}`;
+  badge.textContent = overall.action;
+  document.getElementById('sig-desc').textContent =
+    `${overall.buy} dari ${indicators.length} indikator menunjukkan sinyal BELI · ${overall.sell} sinyal JUAL`;
+  document.getElementById('sig-pct').textContent = overall.pct + '%';
+  document.getElementById('sig-fill').style.width  = overall.pct + '%';
+  document.getElementById('sig-fill').style.background = overall.color;
+  document.getElementById('cnt-buy').textContent  = overall.buy;
+  document.getElementById('cnt-sell').textContent = overall.sell;
+  document.getElementById('cnt-neu').textContent  = overall.neu;
+
+  renderLevels(latestPrice);
+
+  // Signal points on chart
+  const buyPts  = closes.map((p,i)=>i>14?rsi(closes.slice(0,i+1))<30?p:null:null);
+  const sellPts = closes.map((p,i)=>i>14?rsi(closes.slice(0,i+1))>70?p:null:null);
+  drawChart(closes, ma20a, ma50a, buyPts, sellPts);
+
+  const now = new Date();
+  document.getElementById('ts').textContent =
+    (dataSource==='live'?'Live · ':'Simulasi · ') +
+    now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  btn.classList.remove('spinning');
+}
+
+loadData();
+</script>
+</body>
+</html>
