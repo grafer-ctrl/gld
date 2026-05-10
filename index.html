@@ -3,158 +3,156 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SLV Hedge Fund Analyzer</title>
+  <title>XAGUSDT AI Analyzer</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
     }
 
-    body {
-      background: #020617;
-      color: white;
-      font-family: Arial, sans-serif;
-      padding: 20px;
+    body{
+      background:#020617;
+      color:white;
+      font-family:Arial,sans-serif;
+      padding:20px;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 10px;
-      font-size: 38px;
+    h1{
+      text-align:center;
+      font-size:42px;
+      margin-bottom:10px;
     }
 
-    .subtitle {
-      text-align: center;
-      color: #94a3b8;
-      margin-bottom: 30px;
+    .subtitle{
+      text-align:center;
+      color:#94a3b8;
+      margin-bottom:30px;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-bottom: 20px;
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+      gap:20px;
+      margin-bottom:20px;
     }
 
-    .card {
-      background: #0f172a;
-      border: 1px solid #1e293b;
-      border-radius: 18px;
-      padding: 20px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    .card{
+      background:#0f172a;
+      border:1px solid #1e293b;
+      border-radius:20px;
+      padding:20px;
+      box-shadow:0 0 20px rgba(0,0,0,0.4);
     }
 
-    .card h2 {
-      color: #94a3b8;
-      margin-bottom: 15px;
-      font-size: 18px;
+    .card h2{
+      color:#94a3b8;
+      margin-bottom:15px;
+      font-size:18px;
     }
 
-    .value {
-      font-size: 32px;
-      font-weight: bold;
+    .value{
+      font-size:34px;
+      font-weight:bold;
     }
 
-    .buy {
-      color: #22c55e;
+    .buy{
+      color:#22c55e;
     }
 
-    .sell {
-      color: #ef4444;
+    .sell{
+      color:#ef4444;
     }
 
-    .neutral {
-      color: #facc15;
+    .neutral{
+      color:#facc15;
     }
 
-    .signal-box {
-      padding: 30px;
-      text-align: center;
-      border-radius: 20px;
-      font-size: 42px;
-      font-weight: bold;
-      margin-top: 20px;
+    .signal-box{
+      margin-top:20px;
+      padding:35px;
+      text-align:center;
+      border-radius:20px;
+      font-size:42px;
+      font-weight:bold;
     }
 
-    .signal-buy {
-      background: rgba(34,197,94,0.15);
-      border: 2px solid #22c55e;
-      color: #22c55e;
+    .signal-buy{
+      background:rgba(34,197,94,0.15);
+      border:2px solid #22c55e;
+      color:#22c55e;
     }
 
-    .signal-sell {
-      background: rgba(239,68,68,0.15);
-      border: 2px solid #ef4444;
-      color: #ef4444;
+    .signal-sell{
+      background:rgba(239,68,68,0.15);
+      border:2px solid #ef4444;
+      color:#ef4444;
     }
 
-    .signal-neutral {
-      background: rgba(250,204,21,0.15);
-      border: 2px solid #facc15;
-      color: #facc15;
+    .signal-neutral{
+      background:rgba(250,204,21,0.15);
+      border:2px solid #facc15;
+      color:#facc15;
     }
 
-    canvas {
-      background: #020617;
-      border-radius: 20px;
-      padding: 10px;
+    canvas{
+      background:#020617;
+      border-radius:20px;
+      padding:10px;
     }
 
-    .footer {
-      margin-top: 40px;
-      text-align: center;
-      color: #64748b;
+    .badge{
+      display:inline-block;
+      padding:10px 16px;
+      border-radius:999px;
+      font-weight:bold;
+      margin-top:10px;
     }
 
-    .status {
-      margin-top: 10px;
-      font-size: 15px;
-      color: #94a3b8;
+    .green{
+      background:rgba(34,197,94,0.15);
+      color:#22c55e;
     }
 
-    .big-card {
-      margin-top: 20px;
+    .red{
+      background:rgba(239,68,68,0.15);
+      color:#ef4444;
     }
 
-    ul {
-      margin-left: 20px;
-      line-height: 1.8;
+    .yellow{
+      background:rgba(250,204,21,0.15);
+      color:#facc15;
     }
 
-    .badge {
-      display: inline-block;
-      padding: 8px 14px;
-      border-radius: 999px;
-      margin-top: 10px;
-      font-size: 14px;
-      font-weight: bold;
+    ul{
+      margin-left:20px;
+      line-height:1.9;
     }
 
-    .green {
-      background: rgba(34,197,94,0.15);
-      color: #22c55e;
+    .footer{
+      text-align:center;
+      color:#64748b;
+      margin-top:40px;
     }
 
-    .red {
-      background: rgba(239,68,68,0.15);
-      color: #ef4444;
+    .status{
+      margin-top:10px;
+      color:#94a3b8;
+      font-size:14px;
     }
 
-    .yellow {
-      background: rgba(250,204,21,0.15);
-      color: #facc15;
-    }
   </style>
 </head>
 <body>
 
-<h1>SLV HEDGE FUND ANALYZER</h1>
+<h1>XAGUSDT AI ANALYZER</h1>
+
 <p class="subtitle">
-Professional Multi Signal Dashboard ETF Silver (SLV)
+Real-Time Smart Money Dashboard • Binance API • AI Signal Engine
 </p>
 
 <div class="grid">
@@ -162,7 +160,7 @@ Professional Multi Signal Dashboard ETF Silver (SLV)
   <div class="card">
     <h2>LIVE PRICE</h2>
     <div class="value" id="price">Loading...</div>
-    <div class="status" id="updatedAt"></div>
+    <div class="status" id="updatedAt">Waiting market...</div>
   </div>
 
   <div class="card">
@@ -178,15 +176,15 @@ Professional Multi Signal Dashboard ETF Silver (SLV)
   </div>
 
   <div class="card">
-    <h2>AI MARKET SCORE</h2>
+    <h2>AI PROBABILITY</h2>
     <div class="value" id="aiScore">0%</div>
     <div class="status">Probability Engine</div>
   </div>
 
 </div>
 
-<div class="card big-card">
-  <h2>REAL-TIME CHART</h2>
+<div class="card">
+  <h2>REAL-TIME MARKET CHART</h2>
   <canvas id="chart"></canvas>
 </div>
 
@@ -198,39 +196,38 @@ Professional Multi Signal Dashboard ETF Silver (SLV)
 
   <div class="card">
     <h2>SMART MONEY ANALYSIS</h2>
+
     <ul>
-      <li id="liquidity">Liquidity: Detecting...</li>
-      <li id="trend">Trend: Detecting...</li>
-      <li id="volatility">Volatility: Detecting...</li>
-      <li id="strength">Strength: Detecting...</li>
+      <li id="trend">Trend: Waiting...</li>
+      <li id="liquidity">Liquidity: Waiting...</li>
+      <li id="volatility">Volatility: Waiting...</li>
+      <li id="strength">Momentum: Waiting...</li>
     </ul>
+
   </div>
 
   <div class="card">
     <h2>MARKET STATUS</h2>
 
-    <div id="marketStatusBadge" class="badge yellow">
+    <div id="marketBadge" class="badge yellow">
       WAITING DATA
     </div>
 
-    <div style="margin-top:20px">
-      <p>Support: <span id="support">-</span></p>
-      <br>
-      <p>Resistance: <span id="resistance">-</span></p>
-      <br>
-      <p>Risk Reward: <span id="rr">-</span></p>
+    <div style="margin-top:20px; line-height:2;">
+      <div>Support: <span id="support">-</span></div>
+      <div>Resistance: <span id="resistance">-</span></div>
+      <div>Risk Reward: <span id="rr">-</span></div>
     </div>
+
   </div>
 
 </div>
 
 <div class="footer">
-  Hedge Fund Style Dashboard • EMA • RSI • AI Probability • Smart Money Concept
+Powered by Binance Public API • No API Key Needed
 </div>
 
 <script>
-
-const API_KEY = "MASUKKAN_API_KEY_TWELVEDATA";
 
 let chart;
 
@@ -238,33 +235,30 @@ async function getMarketData(){
 
   try {
 
-    const url =
-    `https://api.twelvedata.com/time_series?symbol=SLV&interval=5min&outputsize=80&apikey=${API_KEY}`;
-
-    const response = await fetch(url);
+    const response = await fetch(
+      'https://api.binance.com/api/v3/klines?symbol=XAGUSDT&interval=5m&limit=100'
+    );
 
     const data = await response.json();
 
-    if(!data.values){
-      alert("API ERROR - CEK API KEY");
-      return;
-    }
+    const prices = data.map(candle =>
+      parseFloat(candle[4])
+    );
 
-    const values = data.values.reverse();
-
-    const prices = values.map(v => parseFloat(v.close));
-
-    const labels = values.map(v => v.datetime);
+    const labels = data.map(candle =>
+      new Date(candle[0]).toLocaleTimeString()
+    );
 
     const latestPrice = prices[prices.length - 1];
 
     document.getElementById('price').innerHTML =
-    '$' + latestPrice.toFixed(2);
+    '$' + latestPrice.toFixed(3);
 
     document.getElementById('updatedAt').innerHTML =
     'Updated: ' + new Date().toLocaleTimeString();
 
     const ema9 = calculateEMA(prices, 9);
+
     const ema21 = calculateEMA(prices, 21);
 
     const rsi = calculateRSI(prices, 14);
@@ -273,13 +267,22 @@ async function getMarketData(){
 
     updateRSI(rsi);
 
-    renderChart(labels, prices, ema9, ema21);
+    renderChart(labels, prices);
 
-    generateMasterSignal(ema9, ema21, rsi, latestPrice, prices);
+    generateSignal(
+      ema9,
+      ema21,
+      rsi,
+      latestPrice,
+      prices
+    );
 
   } catch(err){
 
     console.log(err);
+
+    document.getElementById('masterSignal').innerHTML =
+    'BINANCE API ERROR';
 
   }
 
@@ -301,19 +304,19 @@ function calculateEMA(prices, period){
 
 }
 
-function calculateRSI(prices, period = 14){
+function calculateRSI(prices, period=14){
 
   let gains = 0;
   let losses = 0;
 
   for(let i=1;i<period;i++){
 
-    let difference = prices[i] - prices[i-1];
+    let diff = prices[i] - prices[i-1];
 
-    if(difference >= 0){
-      gains += difference;
+    if(diff >= 0){
+      gains += diff;
     } else {
-      losses += Math.abs(difference);
+      losses += Math.abs(diff);
     }
 
   }
@@ -349,13 +352,17 @@ function updateRSI(rsi){
   element.innerHTML = rsi.toFixed(0);
 
   if(rsi > 70){
+
     element.className = 'value sell';
-  }
-  else if(rsi < 30){
+
+  } else if(rsi < 30){
+
     element.className = 'value buy';
-  }
-  else {
+
+  } else {
+
     element.className = 'value neutral';
+
   }
 
 }
@@ -370,36 +377,36 @@ function renderChart(labels, prices){
 
   chart = new Chart(ctx, {
 
-    type: 'line',
+    type:'line',
 
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'SLV PRICE',
-        data: prices,
-        borderWidth: 2,
-        tension: 0.3
+    data:{
+      labels:labels,
+      datasets:[{
+        label:'XAGUSDT',
+        data:prices,
+        borderWidth:2,
+        tension:0.3
       }]
     },
 
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          labels: {
-            color: 'white'
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{
+          labels:{
+            color:'white'
           }
         }
       },
-      scales: {
-        x: {
-          ticks: {
-            color: 'white'
+      scales:{
+        x:{
+          ticks:{
+            color:'white'
           }
         },
-        y: {
-          ticks: {
-            color: 'white'
+        y:{
+          ticks:{
+            color:'white'
           }
         }
       }
@@ -409,11 +416,19 @@ function renderChart(labels, prices){
 
 }
 
-function generateMasterSignal(ema9, ema21, rsi, latestPrice, prices){
+function generateSignal(
+  ema9,
+  ema21,
+  rsi,
+  latestPrice,
+  prices
+){
 
-  const signalBox = document.getElementById('masterSignal');
+  const signalBox =
+  document.getElementById('masterSignal');
 
-  const aiScore = document.getElementById('aiScore');
+  const aiScore =
+  document.getElementById('aiScore');
 
   let score = 50;
 
@@ -432,32 +447,47 @@ function generateMasterSignal(ema9, ema21, rsi, latestPrice, prices){
   }
 
   const support = Math.min(...prices.slice(-20));
+
   const resistance = Math.max(...prices.slice(-20));
 
   document.getElementById('support').innerHTML =
-  '$' + support.toFixed(2);
+  '$' + support.toFixed(3);
 
   document.getElementById('resistance').innerHTML =
-  '$' + resistance.toFixed(2);
+  '$' + resistance.toFixed(3);
 
-  const rr = ((resistance - latestPrice) / (latestPrice - support)).toFixed(2);
+  const rr = (
+    (resistance - latestPrice)
+    /
+    (latestPrice - support)
+  ).toFixed(2);
 
   document.getElementById('rr').innerHTML = rr;
 
   aiScore.innerHTML = score + '%';
+
+  const badge =
+  document.getElementById('marketBadge');
 
   if(score >= 65){
 
     signalBox.innerHTML = 'BUY SIGNAL';
     signalBox.className = 'signal-box signal-buy';
 
-    document.getElementById('marketStatusBadge').innerHTML = 'BULLISH MARKET';
-    document.getElementById('marketStatusBadge').className = 'badge green';
+    badge.innerHTML = 'BULLISH MARKET';
+    badge.className = 'badge green';
 
-    document.getElementById('trend').innerHTML = 'Trend: Bullish Structure';
-    document.getElementById('liquidity').innerHTML = 'Liquidity: Buyers Dominant';
-    document.getElementById('volatility').innerHTML = 'Volatility: Healthy';
-    document.getElementById('strength').innerHTML = 'Strength: Strong Momentum';
+    document.getElementById('trend').innerHTML =
+    'Trend: Bullish Structure';
+
+    document.getElementById('liquidity').innerHTML =
+    'Liquidity: Buyers Dominant';
+
+    document.getElementById('volatility').innerHTML =
+    'Volatility: Healthy';
+
+    document.getElementById('strength').innerHTML =
+    'Momentum: Strong';
 
   }
 
@@ -466,13 +496,20 @@ function generateMasterSignal(ema9, ema21, rsi, latestPrice, prices){
     signalBox.innerHTML = 'SELL SIGNAL';
     signalBox.className = 'signal-box signal-sell';
 
-    document.getElementById('marketStatusBadge').innerHTML = 'BEARISH MARKET';
-    document.getElementById('marketStatusBadge').className = 'badge red';
+    badge.innerHTML = 'BEARISH MARKET';
+    badge.className = 'badge red';
 
-    document.getElementById('trend').innerHTML = 'Trend: Bearish Structure';
-    document.getElementById('liquidity').innerHTML = 'Liquidity: Sellers Dominant';
-    document.getElementById('volatility').innerHTML = 'Volatility: High';
-    document.getElementById('strength').innerHTML = 'Strength: Weak Momentum';
+    document.getElementById('trend').innerHTML =
+    'Trend: Bearish Structure';
+
+    document.getElementById('liquidity').innerHTML =
+    'Liquidity: Sellers Dominant';
+
+    document.getElementById('volatility').innerHTML =
+    'Volatility: High';
+
+    document.getElementById('strength').innerHTML =
+    'Momentum: Weak';
 
   }
 
@@ -481,13 +518,20 @@ function generateMasterSignal(ema9, ema21, rsi, latestPrice, prices){
     signalBox.innerHTML = 'WAIT / SIDEWAYS';
     signalBox.className = 'signal-box signal-neutral';
 
-    document.getElementById('marketStatusBadge').innerHTML = 'SIDEWAYS';
-    document.getElementById('marketStatusBadge').className = 'badge yellow';
+    badge.innerHTML = 'SIDEWAYS';
+    badge.className = 'badge yellow';
 
-    document.getElementById('trend').innerHTML = 'Trend: Sideways';
-    document.getElementById('liquidity').innerHTML = 'Liquidity: Neutral';
-    document.getElementById('volatility').innerHTML = 'Volatility: Medium';
-    document.getElementById('strength').innerHTML = 'Strength: Waiting Confirmation';
+    document.getElementById('trend').innerHTML =
+    'Trend: Sideways';
+
+    document.getElementById('liquidity').innerHTML =
+    'Liquidity: Neutral';
+
+    document.getElementById('volatility').innerHTML =
+    'Volatility: Medium';
+
+    document.getElementById('strength').innerHTML =
+    'Momentum: Waiting Confirmation';
 
   }
 
@@ -495,7 +539,7 @@ function generateMasterSignal(ema9, ema21, rsi, latestPrice, prices){
 
 getMarketData();
 
-setInterval(getMarketData, 30000);
+setInterval(getMarketData, 10000);
 
 </script>
 
